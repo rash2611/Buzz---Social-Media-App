@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 
 const expressLayouts = require('express-ejs-layouts');
 const db = require('./configs/mongoose');
+const session = require('express-session');
 
 app.use(express.urlencoded());
 app.use(cookieParser());
