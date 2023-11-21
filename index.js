@@ -49,6 +49,7 @@ app.use(session({
     //TODO change the secret before deployment in production mode
     secret: 'something',
     saveUninitialized: false,
+    resave: false,
     cookie:{
         maxAge: (1000*60*100)
     },
