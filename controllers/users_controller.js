@@ -46,9 +46,9 @@ module.exports.update = async function(req,res){
 
                 user.save();
                 return res.redirect('back');
-            })
+            });
         }catch(err){
-            req.flash('error','err');
+            req.flash('error',err);
             return res.redirect('back');
         }
     }
@@ -87,12 +87,13 @@ module.exports.signUp = function(req,res){
  {
     if(req.body.password != req.body.confirm_password)
     {
-        res.redirect('back');
+        req.flash('error', 'Passwords do not match');
+        return res.redirect('back');
     }
     User.findOne({email: req.body.email},function(err,user){
         if(err)
         {
-            console.log('err in finding the user in signing up');
+            req.flash('error', err);
             return;
         }
         if(!user)
@@ -101,7 +102,7 @@ module.exports.signUp = function(req,res){
             {
                 if(err)
                 {
-                    console.log('error in creating the user while signing up');
+                    req.flash('error', err);
                     return;
                 }
                 return res.redirect('/users/sign-in');
@@ -110,6 +111,7 @@ module.exports.signUp = function(req,res){
         }
         else
         {
+            req.flash('success', 'You have signed up, login to continue!');
             return res.redirect('back');
         }
  });

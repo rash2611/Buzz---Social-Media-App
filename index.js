@@ -1,5 +1,6 @@
 const express = require('express');
-
+const logger = require('morgan');
+const env = require('./configs/environment');
 const app = express();
 
 const port = 8800;
@@ -13,29 +14,43 @@ const session = require('express-session');
 const passport = require('passport');
 const passportLocal = require('./configs/passport-local-strategy');
 const passportJWT = require('./configs/passport-jwt-strategy');
+const passportGoogle = require('./configs/passport-google-oauth2-strategy');
 const MongoStore = require('connect-mongo');
 const sassMiddleware = require('node-sass-middleware');
 //const bodyParser = require('body-parser');
 const flash = require('connect-flash');
 const customMware = require('./configs/middleware');
 
-app.use(sassMiddleware({
-    src: './assets/scss',
-    dest: './assets/css',
-    debug: true,
- //   indentedSyntax: false,
-    outputStyle: 'extended',
-    prefix: '/css'
+//setup the chat server to be used with socket.io
+const chatServer = require('http').Server(app);
+const chatSockets = require('./configs/chat_sockets').chatSockets(chatServer);
+chatServer.listen(5000);
+console.log('chat server is listening on port 5000');
+const path = require('path');
 
-}));
+if(env.name == 'development')
+{
+    app.use(sassMiddleware({
+        src: path.join(__dirname,process.env.BUZZ_ASSET_PATH,'scss'),
+        dest: path.join(__dirname,process.env.BUZZ_ASSET_PATH,'css'),
+        debug: true,
+     //   indentedSyntax: false,
+        outputStyle: 'compressed',
+        prefix: '/css'
+    
+    }));
+}
+
 
 app.use(express.urlencoded());
 
 app.use(cookieParser());
 
-app.use(express.static('./assets'));
+app.use(express.static(process.env.BUZZ_ASSET_PATH));
 //make the uploads path available to the browser
 app.use('/uploads',express.static(__dirname + '/uploads'));
+
+app.use(logger(env.morgan.mode, env.morgan.options));
 
 app.use(expressLayouts);
 // app.use(bodyParser.json());
@@ -52,7 +67,7 @@ app.set('views','./views');
 app.use(session({
     name: 'buzz',
     //TODO change the secret before deployment in production mode
-    secret: 'something',
+    secret: process.env.BUZZ_SESSION_COOKIE_KEY,
     saveUninitialized: false,
     resave: false,
     cookie:{

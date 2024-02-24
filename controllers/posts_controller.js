@@ -1,5 +1,6 @@
 const Post = require('../models/post');
 const Comment = require('../models/comment');
+const Like = require('../models/like');
 
 module.exports.create = async function(req,res){
     try{
@@ -24,7 +25,7 @@ module.exports.create = async function(req,res){
         return res.redirect('back');
 
     }catch(err){
-        req.flash('error','err');
+        req.flash('error',err);
         // added this to view the error on console as well
         console.log(err);
         return res.redirect('back');
@@ -39,6 +40,10 @@ module.exports.destroy = async function(req,res){
         //.id means converting the object id into string
         if(post.user == req.user.id)
         {
+            //delete the associated likes for the post and all its comments' likes too
+            await Like.deleteMany({likeable: post, onModel: 'Post'});
+            await Like.deleteMany({_id: {$in: post.comments}});
+
             post.remove();
 
             await Comment.deleteMany({post: req.params.id});
@@ -60,7 +65,7 @@ module.exports.destroy = async function(req,res){
             return res.redirect('back');
         }
     }catch(err){
-        req.flash('error','err');
+        req.flash('error',err);
         return res.redirect('back');
     }
 }

@@ -15,11 +15,17 @@ const postSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Comment'
         }
+    ],
+    likes: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Like'
+        }
     ]
 },{
         timestamps: true
     
 });
 
-const Posts = mongoose.model('Posts', postSchema);
-module.exports = Posts;
+const Post = mongoose.model('Posts', postSchema);
+module.exports = Post;
